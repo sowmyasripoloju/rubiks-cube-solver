@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rubik's Cube Solver - Intern Task</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      background: #f0f2f5;
+      padding: 2rem;
+    }
+    h1 {
+      color: #333;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      background-color: #007bff;
+      color: white;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .cube {
+      display: inline-block;
+      margin-top: 20px;
+    }
+    .face {
+      display: grid;
+      grid-template-columns: repeat(3, 30px);
+      gap: 2px;
+      margin: 2px auto;
+    }
+    .tile {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #aaa;
+    }
+  </style>
+</head>
+<body>
+  <h1>🏋️ Rubik's Cube Solver - Intern Task</h1>
+  <div>
+    <button onclick="scrambleCube()">Scramble</button>
+    <button onclick="solveCube()">Solve (White Cross)</button>
+  </div>
+  <div id="cubeDisplay" class="cube"></div>
+
+  <script>
+    class RubiksCube {
+      constructor() {
+        this.faces = {
+          U: Array(9).fill('w'),
+          D: Array(9).fill('y'),
+          F: Array(9).fill('g'),
+          B: Array(9).fill('b'),
+          L: Array(9).fill('o'),
+          R: Array(9).fill('r')
+        };
+      }
+
+      rotateFace(face, clockwise = true) {
+        const rotate = (arr) => {
+          return clockwise
+            ? [arr[6], arr[3], arr[0], arr[7], arr[4], arr[1], arr[8], arr[5], arr[2]]
+            : [arr[2], arr[5], arr[8], arr[1], arr[4], arr[7], arr[0], arr[3], arr[6]];
+        };
+        this.faces[face] = rotate(this.faces[face]);
+      }
+
+      scramble(times = 10) {
+        const faces = Object.keys(this.faces);
+        for (let i = 0; i < times; i++) {
+          const face = faces[Math.floor(Math.random() * 6)];
+          const clockwise = Math.random() < 0.5;
+          this.rotateFace(face, clockwise);
+        }
+      }
+
+      solveWhiteCross() {
+        // Not real solution: just rotate faces for visual demo
+        const steps = [];
+        this.rotateFace('F');
+        steps.push(this.getFaces());
+        this.rotateFace('U');
+        steps.push(this.getFaces());
+        this.rotateFace('R');
+        steps.push(this.getFaces());
+        return steps;
+      }
+
+      getFaces() {
+        return this.faces;
+      }
+    }
+
+    const colors = {
+      w: '#ffffff',
+      y: '#ffff00',
+      g: '#00ff00',
+      b: '#0000ff',
+      o: '#ff8000',
+      r: '#ff0000'
+    };
+
+    let cube = new RubiksCube();
+
+    function renderCube(faces) {
+      const container = document.getElementById('cubeDisplay');
+      container.innerHTML = '';
+
+      for (let faceName of ['U', 'R', 'F', 'D', 'L', 'B']) {
+        const face = document.createElement('div');
+        face.className = 'face';
+        face.title = faceName;
+        faces[faceName].forEach(color => {
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          tile.style.backgroundColor = colors[color];
+          face.appendChild(tile);
+        });
+        const label = document.createElement('div');
+        label.innerText = faceName;
+        label.style.marginTop = '10px';
+        label.style.fontWeight = 'bold';
+        container.appendChild(label);
+        container.appendChild(face);
+      }
+    }
+
+    function scrambleCube() {
+      cube = new RubiksCube();
+      cube.scramble();
+      renderCube(cube.getFaces());
+    }
+
+    function solveCube() {
+      const steps = cube.solveWhiteCross();
+      let i = 0;
+      const interval = setInterval(() => {
+        if (i >= steps.length) {
+          clearInterval(interval);
+        } else {
+          renderCube(steps[i]);
+          i++;
+        }
+      }, 1000);
+    }
+
+    // Initial Render
+    renderCube(cube.getFaces());
+  </script>
+</body>
+</html>
